@@ -147,3 +147,43 @@ else:
 ```python
 pip install requests
 ```
+
+#### 코드 작성
+- 예제 코드를 통해 API를 호출하는 방법 설명
+```python
+import requests
+
+# API 키 설정
+api_key = 'YOUR_API_KEY'
+
+# API 엔드포인트 설정
+url = "https://api.openai.com/v1/chat/completions"
+
+# 헤더 설정
+headers = {
+    "Content-Type": "application/json",
+    "Authorization": f"Bearer {api_key}"
+}
+
+# 데이터 설정
+data = {
+    "model": "gpt-4",
+    "messages": [
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": "안녕하세요, ChatGPT API를 사용하고 싶어요. 어떻게 해야 하나요?"}
+    ],
+    "temperature": 0.7
+}
+
+# 요청 보내기
+response = requests.post(url, headers=headers, json=data)
+
+# 응답 확인
+if response.status_code == 200:
+    result = response.json()
+    print(result)
+else:
+    print(f"Error: {response.status_code}")
+    print(response.text)
+```
+

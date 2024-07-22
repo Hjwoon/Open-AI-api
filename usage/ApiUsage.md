@@ -187,3 +187,147 @@ else:
     print(response.text)
 ```
 
+#### 응답 처리
+- 성공적으로 API 호출이 이루어지면, response.json()을 통해 응답 데이터를 JSON 형식으로 받을 수 있음
+- 응답 데이터에서 ChatGPT의 응답 내용을 추출하여 사용할 수 있음
+
+##### 응답 구조
+- ChatGPT API의 응답 데이터는 JSON 형식으로 제공
+```python
+{
+  "id": "chatcmpl-...",
+  "object": "chat.completion",
+  "created": 1627311351,
+  "model": "gpt-4",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Here is the response from ChatGPT."
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 5,
+    "completion_tokens": 7,
+    "total_tokens": 12
+  }
+}
+```
+
+##### 응답 데이터 추출
+- 응답 데이터에서 필요한 정보만 추출하여 원하는 형식으로 가공
+```python
+import requests
+
+# API 키 설정
+api_key = 'YOUR_API_KEY'
+
+# API 엔드포인트 설정
+url = "https://api.openai.com/v1/chat/completions"
+
+# 헤더 설정
+headers = {
+    "Content-Type": "application/json",
+    "Authorization": f"Bearer {api_key}"
+}
+
+# 데이터 설정
+data = {
+    "model": "gpt-4",
+    "messages": [
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": "안녕하세요, ChatGPT API를 사용하고 싶어요. 어떻게 해야 하나요?"}
+    ],
+    "temperature": 0.7
+}
+
+# 요청 보내기
+response = requests.post(url, headers=headers, json=data)
+
+# 응답 처리
+if response.status_code == 200:
+    result = response.json()
+    
+    # 'choices' 리스트에서 첫 번째 응답 추출
+    response_message = result['choices'][0]['message']['content']
+    
+    # 필요한 정보 추출
+    print("ChatGPT의 응답:", response_message)
+    
+    # 원하는 형식으로 데이터 가공
+    formatted_response = {
+        "응답": response_message,
+        "토큰 사용량": result['usage']['total_tokens']
+    }
+    
+    # 커스터마이징된 응답 출력
+    print("커스터마이징된 응답:", formatted_response)
+else:
+    print(f"Error: {response.status_code}")
+    print(response.text)
+```
+
+##### 커스터마이징
+- 응답을 다양한 형식으로 커스터마이징할 수 있음. 아래는 예시
+<b>텍스트만 추출</b>
+```python
+response_message = result['choices'][0]['message']['content']
+print("ChatGPT의 응답:", response_message)
+```
+<b>JSON 형식으로 가공</b>
+```python
+formatted_response = {
+    "response": result['choices'][0]['message']['content'],
+    "usage": result['usage']
+}
+print("Formatted Response:", formatted_response)
+```
+<b>HTML 형식으로 가공</b>
+```python
+html_response = f"""
+<html>
+    <body>
+        <h1>ChatGPT Response</h1>
+        <p>{result['choices'][0]['message']['content']}</p>
+        <p><b>Total Tokens Used:</b> {result['usage']['total_tokens']}</p>
+    </body>
+</html>
+"""
+print("HTML Response:", html_response)
+```
+<b>텍스트 파일로 저장</b>
+```python
+with open("response.txt", "w") as file:
+    file.write(result['choices'][0]['message']['content'])
+print("Response saved to response.txt")
+```
+
+##### 예외 처리 및 오류 메시지 커스터마이징
+- API 호출 중 오류가 발생할 경우 이를 처리
+```python
+try:
+    response = requests.post(url, headers=headers, json=data)
+    response.raise_for_status()
+    result = response.json()
+    
+    response_message = result['choices'][0]['message']['content']
+    formatted_response = {
+        "response": response_message,
+        "usage": result['usage']
+    }
+    print("Formatted Response:", formatted_response)
+    
+except requests.exceptions.HTTPError as err:
+    print(f"HTTP error occurred: {err}")
+    if response.status_code == 401:
+        print("Invalid API key provided.")
+    elif response.status_code == 429:
+        print("Rate limit exceeded. Please try again later.")
+    else:
+        print("An error occurred.")
+except Exception as err:
+    print(f"An error occurred: {err}")
+```

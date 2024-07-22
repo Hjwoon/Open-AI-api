@@ -62,3 +62,81 @@ answer
 openai.ChatCompletion.create()에 위에서 정의한 파라미터를 입력하고 ‘response’에 값을 할당
 
 response[‘choices’][0][‘message’][‘content’]를 호출하면 응답 메시지를 확인할 수 있음
+<br>
+
+### API 엔드포인트 설정
+- API 호출을 수행할 대상 URL을 지정하는 것을 의미
+- OpenAI의 ChatGPT API 엔드포인트는 https://api.openai.com/v1/chat/completions
+  - 이 엔드포인트는 ChatGPT 모델을 사용하여 대화를 생성하는 데 사용
+
+#### 엔드포인트 설정 방법
+##### 1. 엔드포인트 설정
+- 엔드포인트는 HTTP 요청을 보낼 때 사용하는 기본 URL
+```python
+# API 엔드포인트 설정
+url = "https://api.openai.com/v1/chat/completions"
+```
+
+##### 2. HTTP 요청 만들기
+- 이 엔드포인트를 사용하여 POST 요청을 만들어 OpenAI API에 데이터를 전송
+ex)
+```python
+import requests
+
+# API 키 설정
+api_key = 'YOUR_API_KEY'
+
+# API 엔드포인트 설정
+url = "https://api.openai.com/v1/chat/completions"
+
+# 헤더 설정
+headers = {
+    "Content-Type": "application/json",
+    "Authorization": f"Bearer {api_key}"
+}
+
+# 데이터 설정
+data = {
+    "model": "gpt-4",
+    "messages": [
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": "안녕하세요, ChatGPT API를 사용하고 싶어요. 어떻게 해야 하나요?"}
+    ],
+    "temperature": 0.7
+}
+
+# 요청 보내기
+response = requests.post(url, headers=headers, json=data)
+
+# 응답 처리
+if response.status_code == 200:
+    result = response.json()
+    
+    # 'choices' 리스트에서 첫 번째 응답 추출
+    response_message = result['choices'][0]['message']['content']
+    
+    # 필요한 정보 추출
+    print("ChatGPT의 응답:", response_message)
+    
+    # 원하는 형식으로 데이터 가공
+    formatted_response = {
+        "응답": response_message,
+        "토큰 사용량": result['usage']['total_tokens']
+    }
+    
+    # 커스터마이징된 응답 출력
+    print("커스터마이징된 응답:", formatted_response)
+else:
+    print(f"Error: {response.status_code}")
+    print(response.text)
+```
+****
+<b>요약</b><br>
+1. API 키 설정: api_key 변수에 자신의 API 키를 저장합니다.
+2. API 엔드포인트 설정: url 변수에 API 엔드포인트 URL을 설정합니다.
+3. 헤더 설정: 요청 헤더에는 Content-Type과 Authorization을 포함합니다. Authorization 헤더는 Bearer 토큰 방식으로 API 키를 포함합니다.
+4. 데이터 설정: 요청 본문에는 model, messages, temperature 등을 포함한 JSON 데이터를 설정합니다.
+5. 요청 보내기: requests.post 함수를 사용하여 POST 요청을 보냅니다.
+6. 응답 처리: 응답 상태 코드가 200(성공)일 경우 응답 데이터를 JSON 형식으로 파싱하고 필요한 정보를 추출하여 출력합니다.
+이와 같이 엔드포인트를 설정하고 HTTP 요청을 만들어 API를 호출합니다.
+<br><hr>
